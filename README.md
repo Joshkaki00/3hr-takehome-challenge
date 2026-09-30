@@ -41,24 +41,25 @@ flask --app wsgi run --host=0.0.0.0 --port=5000
 ```bash
 # needs OPENWEATHER_API_KEY + REDIS_PASSWORD in the environment or local .env
 docker compose up --build --detach
-curl http://127.0.0.1:5000/health
-curl http://127.0.0.1:5000/ready
+curl http://127.0.0.1/health
+curl http://127.0.0.1/ready
 docker compose down
 ```
 
-- API: host port 5000 (`0.0.0.0` in the container)
+- Public entry: nginx on host port **80** (api is internal-only on 5000)
 - Redis: internal only; password via `REDIS_PASSWORD`; AOF on volume `redis-data`
 - Container runs **gunicorn** (`wsgi:app`), not `flask run`
 - Probes: `/health` = liveness; `/ready` = Redis up (Docker HEALTHCHECK uses `/ready`)
+- `PROXY_COUNT=1` on api (nginx sets X-Forwarded-*)
 
 ### 4. Quick API checks
 
 ```bash
-curl "http://127.0.0.1:5000/weather?city=Seattle"
-curl -X POST http://127.0.0.1:5000/moods \
+curl "http://127.0.0.1/weather?city=Seattle"
+curl -X POST http://127.0.0.1/moods \
   -H "Content-Type: application/json" \
   -d '{"mood":"ok","note":"cloudy"}'
-curl http://127.0.0.1:5000/moods
+curl http://127.0.0.1/moods
 ```
 
 ### 5. Tests
@@ -116,8 +117,9 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 15:28 prod step 7 (web search): split probes. `/health` liveness (always 200). `/ready` checks Redis, 503 if down. Docker HEALTHCHECK now hits `/ready`.
 - 15:31 prod step 8 (web search): Compose `deploy.resources` limits/reservations on api (1 CPU / 256M) and redis (0.5 CPU / 128M). Compose V2 applies these without Swarm.
 - 15:33 prod step 9 (web search): Flask ProxyFix gated by `PROXY_COUNT` (default 0). Only wrap when behind a real proxy; count must match the chain.
+- 15:36 prod step 10 (web search): nginx reverse proxy (`nginx:1.27.3-alpine`) on port 80. api no longer published; sets X-Forwarded-*. Compose forces `PROXY_COUNT=1`.
 
-Hands-on so far: about 130 min since the venv. next prod step: nginx reverse proxy in Compose, or structured JSON logging, or stop and submit.
+Hands-on so far: about 135 min since the venv. next prod step: structured JSON logging, or TLS, or stop and submit.
 
 ## Open decisions
 

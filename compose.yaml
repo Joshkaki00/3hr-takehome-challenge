@@ -1,9 +1,9 @@
-# App + Redis. No top-level version key (Compose Spec).
+# App + Redis + nginx. No top-level version key (Compose Spec).
 # API key / Redis password stay out of the image: pass via host env or .env.
 # Startup order: https://docs.docker.com/compose/how-tos/startup-order/
 # Redis auth + AOF: https://redis.io/tutorials/operate/orchestration/docker/
-# Resource limits (Compose V2+ applies deploy.resources on compose up):
-# https://docs.docker.com/reference/compose-file/deploy/#resources
+# Resource limits: https://docs.docker.com/reference/compose-file/deploy/#resources
+# nginx reverse proxy: Flask proxy_fix docs + X-Forwarded-* headers.
 
 services:
   redis:
@@ -39,13 +39,15 @@ services:
 
   api:
     build: .
-    ports:
-      - "5000:5000"
+    # Internal only; nginx publishes port 80.
+    expose:
+      - "5000"
     environment:
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
       FLASK_HOST: 0.0.0.0
       FLASK_PORT: "5000"
       OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY}
+      PROXY_COUNT: "1"
     env_file:
       - path: .env
         required: false
@@ -60,6 +62,31 @@ services:
         reservations:
           cpus: "0.25"
           memory: 64M
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27.3-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/ready"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 64M
+        reservations:
+          cpus: "0.05"
+          memory: 16M
     restart: unless-stopped
 
 volumes:
