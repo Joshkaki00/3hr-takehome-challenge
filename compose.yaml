@@ -1,0 +1,23 @@
+# App + Redis. No top-level version key (Compose Spec).
+# API key stays out of the image: pass via host env or .env file.
+
+services:
+  redis:
+    image: redis:7.2.5-alpine
+    restart: unless-stopped
+
+  api:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      FLASK_HOST: 0.0.0.0
+      FLASK_PORT: "5000"
+      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY}
+    env_file:
+      - path: .env
+        required: false
+    depends_on:
+      - redis
+    restart: unless-stopped

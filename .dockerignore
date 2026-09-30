@@ -1,0 +1,14 @@
+.venv
+.git
+.github
+.pytest_cache
+__pycache__
+*.pyc
+.env
+.local
+tmp
+data
+*.md
+.pre-commit-config.yaml
+pytest.ini
+tests

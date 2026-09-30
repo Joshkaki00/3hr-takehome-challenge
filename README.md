@@ -26,6 +26,16 @@ Filled in after the app exists.
 
 ### Docker
 
+```bash
+# needs OPENWEATHER_API_KEY in the environment or in local .env
+docker compose up --build --detach
+curl http://127.0.0.1:5000/health
+docker compose down
+```
+
+- API listens on host port **5000** (`0.0.0.0` inside the container)
+- Redis is internal only (`redis://redis:6379/0`); not published to the host
+- Key is never baked into the image (Compose `environment` / optional `env_file`)
 ### Environment
 
 - Copy `.env.example` to `.env`
@@ -74,14 +84,15 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 15:01 read redis-py production usage notes: retries (default 3), `health_check_interval`, timeouts (`socket_connect_timeout` / `socket_timeout`), handle `ConnectionError`/`TimeoutError`. good candidates to tighten on `from_url` later if we have time.
 - 15:03 started Redis with Docker: `docker run -d --name mood-redis -p 6379:6379 redis:7-alpine`. `redis-cli ping` inside container -> PONG. hit `/health` via test client -> `{"status":"ok","redis":true}`.
 - 15:04 added route tests under `tests/functional/` (`/health`, `/weather`, `/moods`). conftest now injects a mock Redis so tests do not need a live server. `pytest` -> 21 passed.
+- 15:06 re-read Docker run-an-app tutorial, `docker version`, CLI ref, Compose secrets docs. kept API key as env (not Compose secrets file) for simpler instructor setup.
+- 15:07 added `Dockerfile` (`python:3.12.7-slim`), `.dockerignore`, `compose.yaml` (api + `redis:7.2.5-alpine`). `docker compose up --build -d` then `curl /health` -> `{"status":"ok","redis":true}`.
 
-Hands-on so far: about 70 min since the venv. next: Dockerfile + Compose (app + redis).
+Hands-on so far: about 75 min since the venv. next: maybe tighten redis-py timeouts, or a final README polish / clean check from scratch.
 
 ## Open decisions
 
 - Storage: Redis (decided). Mood entries live in Redis. Tests mock Redis.
 - One mood per day: overwrite by default (can reject with overwrite=False).
-- Docker: will need a Redis service (Compose) plus the Flask app image.
+- Docker: Compose with `api` + `redis` (done). Instructor needs Docker Desktop or equivalent.
 - Endpoints so far: `GET /health`, `GET /weather?city=`, `POST /moods`, `GET /moods`.
 - DM format: zip or repo link (ask instructor)
-- Does instructor have Docker (ask instructor)
