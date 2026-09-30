@@ -1,0 +1,41 @@
+# Lean security + hygiene hooks.
+# Pattern aligned with common battle-tested setups:
+# gitleaks (secrets), bandit (Python SAST), pip-audit (dep CVEs),
+# base pre-commit-hooks. Pin hook revs exactly.
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: end-of-file-fixer
+        exclude: ^\.gitignore$
+      - id: trailing-whitespace
+        exclude: ^\.gitignore$
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: check-json
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.9.4
+    hooks:
+      - id: bandit
+        args: ["-r", ".", "-x", "./.venv,./.git", "-ll"]
+        additional_dependencies: []
+
+  # Official PyPA hook. Prefer -r requirements.txt once freeze is filled.
+  # --strict fails closed if a dep cannot be audited.
+  - repo: https://github.com/pypa/pip-audit
+    rev: v2.10.1
+    hooks:
+      - id: pip-audit
+        args: ["-r", "requirements.txt", "--strict", "--desc"]
