@@ -51,14 +51,12 @@ def test_fetch_current_weather_success():
     resp = MagicMock()
     resp.status_code = 200
     resp.json.return_value = {
-        "data": [
-            {
-                "temp": 18.5,
-                "feels_like": 17.0,
-                "humidity": 70,
-                "weather": [{"main": "Clouds", "description": "broken clouds"}],
-            }
-        ]
+        "main": {
+            "temp": 18.5,
+            "feels_like": 17.0,
+            "humidity": 70,
+        },
+        "weather": [{"main": "Clouds", "description": "broken clouds"}],
     }
     resp.raise_for_status.return_value = None
     session.get.return_value = resp
@@ -92,14 +90,12 @@ def test_weather_for_city_combines_geo_and_current():
     wx_resp = MagicMock()
     wx_resp.status_code = 200
     wx_resp.json.return_value = {
-        "data": [
-            {
-                "temp": 12.0,
-                "feels_like": 11.0,
-                "humidity": 80,
-                "weather": [{"main": "Rain", "description": "light rain"}],
-            }
-        ]
+        "main": {
+            "temp": 12.0,
+            "feels_like": 11.0,
+            "humidity": 80,
+        },
+        "weather": [{"main": "Rain", "description": "light rain"}],
     }
     wx_resp.raise_for_status.return_value = None
 

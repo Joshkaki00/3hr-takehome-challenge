@@ -102,8 +102,10 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 15:06 re-read Docker run-an-app tutorial, `docker version`, CLI ref, Compose secrets docs. kept API key as env (not Compose secrets file) for simpler instructor setup.
 - 15:07 added `Dockerfile` (`python:3.12.7-slim`), `.dockerignore`, `compose.yaml` (api + `redis:7.2.5-alpine`). `docker compose up --build -d` then `curl /health` -> `{"status":"ok","redis":true}`.
 - 15:08 rewrote How to run in the README (env, local venv, Compose, curl checks, pytest). stub "Filled in after the app exists" is gone.
+- 15:10 set redis-py timeouts on `from_url`: `socket_connect_timeout=2`, `socket_timeout=2`, `health_check_interval=30`.
+- 15:11 Compose smoke: moods OK; `/weather` returned invalid key. root cause: One Call 4.0 needs a paid plan. switched to Current Weather Data 2.5 (free). updated unit mocks. `pytest` 21 passed. rebuild smoke: Seattle weather + POST/GET moods all green.
 
-Hands-on so far: about 80 min since the venv. next: tighten redis-py timeouts on `from_url`, then a clean Compose smoke of weather + moods.
+Hands-on so far: about 85 min since the venv. next: final polish / submission prep (DM notes), or leave it.
 
 ## Open decisions
 

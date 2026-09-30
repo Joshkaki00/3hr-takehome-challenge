@@ -27,6 +27,9 @@ def create_app(test_config=None):
             app.config["REDIS_URL"],
             decode_responses=True,
             protocol=2,
+            socket_connect_timeout=2,
+            socket_timeout=2,
+            health_check_interval=30,
         )
 
     from app.routes import bp

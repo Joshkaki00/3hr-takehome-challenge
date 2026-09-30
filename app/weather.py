@@ -1,11 +1,15 @@
-"""OpenWeather helpers. Unit tests mock HTTP; no live key needed."""
+"""OpenWeather helpers. Unit tests mock HTTP; no live key needed.
+
+Uses Geocoding + Current Weather Data 2.5 (free tier).
+One Call 4.0 needs a separate paid plan, so we do not use it.
+"""
 
 from __future__ import annotations
 
 import requests
 
 OWM_GEO_URL = "https://api.openweathermap.org/geo/1.0/direct"
-OWM_CURRENT_URL = "https://api.openweathermap.org/data/4.0/onecall/current"
+OWM_CURRENT_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 
 class WeatherError(Exception):
@@ -53,7 +57,7 @@ def geocode_city(city, api_key, session=None):
 
 
 def fetch_current_weather(lat, lon, api_key, session=None, units="metric"):
-    """Fetch One Call 4.0 current weather for lat/lon."""
+    """Fetch Current Weather Data 2.5 for lat/lon (free tier)."""
     require_api_key(api_key)
     http = session or requests
     resp = http.get(
@@ -74,15 +78,12 @@ def fetch_current_weather(lat, lon, api_key, session=None, units="metric"):
         raise WeatherError("weather service unavailable", status_code=502)
     resp.raise_for_status()
     payload = resp.json()
-    rows = payload.get("data") or []
-    if not rows:
-        raise WeatherError("empty weather response", status_code=502)
-    row = rows[0]
-    weather0 = (row.get("weather") or [{}])[0]
+    main = payload.get("main") or {}
+    weather0 = (payload.get("weather") or [{}])[0]
     return {
-        "temp": row.get("temp"),
-        "feels_like": row.get("feels_like"),
-        "humidity": row.get("humidity"),
+        "temp": main.get("temp"),
+        "feels_like": main.get("feels_like"),
+        "humidity": main.get("humidity"),
         "description": weather0.get("description"),
         "main": weather0.get("main"),
     }
