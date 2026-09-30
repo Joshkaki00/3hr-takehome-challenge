@@ -47,6 +47,7 @@ docker compose down
 
 - API: host port 5000 (`0.0.0.0` in the container)
 - Redis: internal only (`redis://redis:6379/0`)
+- Container runs **gunicorn** (`wsgi:app`), not `flask run`
 
 ### 4. Quick API checks
 
@@ -104,8 +105,9 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 15:08 rewrote How to run in the README (env, local venv, Compose, curl checks, pytest). stub "Filled in after the app exists" is gone.
 - 15:10 set redis-py timeouts on `from_url`: `socket_connect_timeout=2`, `socket_timeout=2`, `health_check_interval=30`.
 - 15:11 Compose smoke: moods OK; `/weather` returned invalid key. root cause: One Call 4.0 needs a paid plan. switched to Current Weather Data 2.5 (free). updated unit mocks. `pytest` 21 passed. rebuild smoke: Seattle weather + POST/GET moods all green.
+- 15:14 prod step 1 (web search): Flask says use a real WSGI server, not `flask run`. installed `gunicorn==23.0.0`, pinned in requirements, Dockerfile CMD now `gunicorn -w 2 -b 0.0.0.0:5000 wsgi:app` (exec form so gunicorn is PID 1). local venv still uses `flask run`.
 
-Hands-on so far: about 85 min since the venv. next: final polish / submission prep (DM notes), or leave it.
+Hands-on so far: about 90 min since the venv. next prod step: non-root user in the image (Flask/Gunicorn guidance).
 
 ## Open decisions
 

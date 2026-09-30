@@ -1,9 +1,3 @@
-# Pinned from clean .venv via pip freeze (exact ==).
-# Direct stack (runtime + test + local sec tooling):
-#   Flask, requests, python-dotenv, pytest, redis,
-#   pre-commit, bandit, pip-audit
-# All lines below are the full resolved graph for reproduce installs.
-#
 bandit==1.9.4
 blinker==1.9.0
 boolean.py==5.0
@@ -17,6 +11,7 @@ defusedxml==0.7.1
 distlib==0.4.3
 filelock==4.0.7
 Flask==3.1.3
+gunicorn==23.0.0
 identify==2.6.20
 idna==3.20
 iniconfig==2.3.0

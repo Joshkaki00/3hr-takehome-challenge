@@ -15,4 +15,6 @@ COPY wsgi.py .
 # Key and Redis URL come from env / Compose, never baked in.
 EXPOSE 5000
 
-CMD ["flask", "--app", "wsgi", "run", "--host=0.0.0.0", "--port=5000"]
+# Prod WSGI (not flask run). Exec-form CMD => gunicorn is PID 1 (SIGTERM).
+# See: https://flask.palletsprojects.com/en/stable/deploying/gunicorn/
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "wsgi:app"]
