@@ -11,6 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 COPY wsgi.py .
+COPY gunicorn.conf.py .
 
 # Non-root runtime (limit blast radius if the app is compromised).
 # See Docker / Flask prod guidance: never run the process as root.
@@ -27,6 +28,6 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/ready', timeout=2)"
 
-# Prod WSGI (not flask run). Exec-form CMD => gunicorn is PID 1 (SIGTERM).
+# Prod WSGI + JSON logs via gunicorn.conf.py
 # See: https://flask.palletsprojects.com/en/stable/deploying/gunicorn/
-CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "wsgi:app"]
+CMD ["gunicorn", "-c", "gunicorn.conf.py", "wsgi:app"]

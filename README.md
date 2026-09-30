@@ -118,8 +118,9 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 15:31 prod step 8 (web search): Compose `deploy.resources` limits/reservations on api (1 CPU / 256M) and redis (0.5 CPU / 128M). Compose V2 applies these without Swarm.
 - 15:33 prod step 9 (web search): Flask ProxyFix gated by `PROXY_COUNT` (default 0). Only wrap when behind a real proxy; count must match the chain.
 - 15:36 prod step 10 (web search): nginx reverse proxy (`nginx:1.27.3-alpine`) on port 80. api no longer published; sets X-Forwarded-*. Compose forces `PROXY_COUNT=1`.
+- 15:39 prod step 11 (web search): structured JSON logs. pinned `python-json-logger==4.2.0`, `gunicorn.conf.py` `logconfig_dict`, Dockerfile `gunicorn -c gunicorn.conf.py`.
 
-Hands-on so far: about 135 min since the venv. next prod step: structured JSON logging, or TLS, or stop and submit.
+Hands-on so far: about 140 min since the venv. next prod step: TLS, rate limits, or stop and submit.
 
 ## Open decisions
 

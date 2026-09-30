@@ -1,11 +1,47 @@
+import logging
 import os
+from logging.config import dictConfig
 
 import redis
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 
+def _configure_json_logging():
+    """Structured JSON logs for local `flask run` too (gunicorn uses conf)."""
+    if getattr(_configure_json_logging, "_done", False):
+        return
+    dictConfig(
+        {
+            "version": 1,
+            "disable_existing_loggers": False,
+            "formatters": {
+                "json": {
+                    "()": "pythonjsonlogger.json.JsonFormatter",
+                    "fmt": "%(asctime)s %(levelname)s %(name)s %(message)s",
+                    "rename_fields": {
+                        "asctime": "timestamp",
+                        "levelname": "level",
+                    },
+                },
+            },
+            "handlers": {
+                "stdout": {
+                    "class": "logging.StreamHandler",
+                    "stream": "ext://sys.stdout",
+                    "formatter": "json",
+                },
+            },
+            "root": {"level": "INFO", "handlers": ["stdout"]},
+        }
+    )
+    _configure_json_logging._done = True
+
+
 def create_app(test_config=None):
+    if not (test_config or {}).get("TESTING"):
+        _configure_json_logging()
+
     app = Flask(__name__)
     app.config.from_mapping(
         OPENWEATHER_API_KEY=os.getenv("OPENWEATHER_API_KEY", ""),
@@ -49,4 +85,5 @@ def create_app(test_config=None):
     from app.routes import bp
 
     app.register_blueprint(bp)
+    logging.getLogger(__name__).info("app_created")
     return app
