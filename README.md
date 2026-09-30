@@ -51,6 +51,7 @@ docker compose down
 - Container runs **gunicorn** (`wsgi:app`), not `flask run`
 - Probes: `/health` = liveness; `/ready` = Redis up (Docker HEALTHCHECK uses `/ready`)
 - `PROXY_COUNT=1` on api (nginx sets X-Forwarded-*)
+- Rate limits (Flask-Limiter + Redis): default 60/min; `/weather` 30/min; `POST /moods` 20/min; probes exempt
 
 ### 4. Quick API checks
 
@@ -119,8 +120,9 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 15:33 prod step 9 (web search): Flask ProxyFix gated by `PROXY_COUNT` (default 0). Only wrap when behind a real proxy; count must match the chain.
 - 15:36 prod step 10 (web search): nginx reverse proxy (`nginx:1.27.3-alpine`) on port 80. api no longer published; sets X-Forwarded-*. Compose forces `PROXY_COUNT=1`.
 - 15:39 prod step 11 (web search): structured JSON logs. pinned `python-json-logger==4.2.0`, `gunicorn.conf.py` `logconfig_dict`, Dockerfile `gunicorn -c gunicorn.conf.py`.
+- 15:48 prod step 12 (web search): Flask-Limiter 4.1.1 with Redis storage (shared across gunicorn workers). default 60/min; weather 30/min; POST moods 20/min; `/health`+`/ready` exempt. tests cover 429. stopping here.
 
-Hands-on so far: about 140 min since the venv. next prod step: TLS, rate limits, or stop and submit.
+Hands-on so far: about 150 min since the venv. prod hardening pass complete for this take-home.
 
 ## Open decisions
 

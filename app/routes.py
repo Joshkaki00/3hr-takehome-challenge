@@ -1,17 +1,20 @@
 from flask import Blueprint, current_app, jsonify, request
 
 from app import moods, weather
+from app.extensions import limiter
 
 bp = Blueprint("api", __name__)
 
 
 @bp.get("/health")
+@limiter.exempt
 def health():
     # Liveness only: process is up. Do not probe Redis here (restart storms).
     return jsonify({"status": "ok"})
 
 
 @bp.get("/ready")
+@limiter.exempt
 def ready():
     # Readiness: can we serve traffic that needs Redis?
     redis_client = current_app.extensions.get("redis")
@@ -29,6 +32,7 @@ def ready():
 
 
 @bp.get("/weather")
+@limiter.limit("30 per minute")
 def get_weather():
     city = request.args.get("city", "")
     api_key = current_app.config.get("OPENWEATHER_API_KEY", "")
@@ -40,6 +44,7 @@ def get_weather():
 
 
 @bp.post("/moods")
+@limiter.limit("20 per minute")
 def post_mood():
     body = request.get_json(silent=True) or {}
     # redis client is injected on app for easy mocking in tests

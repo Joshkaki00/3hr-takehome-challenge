@@ -6,6 +6,8 @@ import redis
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+from app.extensions import limiter
+
 
 def _configure_json_logging():
     """Structured JSON logs for local `flask run` too (gunicorn uses conf)."""
@@ -49,6 +51,11 @@ def create_app(test_config=None):
         # How many reverse proxies set X-Forwarded-* (0 = no ProxyFix).
         # https://flask.palletsprojects.com/en/stable/deploying/proxy_fix/
         PROXY_COUNT=int(os.getenv("PROXY_COUNT", "0")),
+        # Rate limits (Flask-Limiter). Redis URI shared across gunicorn workers.
+        # https://flask-limiter.readthedocs.io/en/stable/
+        RATELIMIT_DEFAULT=os.getenv("RATELIMIT_DEFAULT", "60 per minute"),
+        RATELIMIT_STORAGE_URI=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+        RATELIMIT_HEADERS_ENABLED=True,
     )
 
     injected_redis = None
@@ -81,6 +88,12 @@ def create_app(test_config=None):
             x_host=proxy_count,
             x_prefix=proxy_count,
         )
+
+    # Tests: in-memory limiter (or disabled). Prod: Redis so workers share state.
+    if app.config.get("TESTING"):
+        app.config.setdefault("RATELIMIT_STORAGE_URI", "memory://")
+        app.config.setdefault("RATELIMIT_ENABLED", False)
+    limiter.init_app(app)
 
     from app.routes import bp
 
