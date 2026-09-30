@@ -73,8 +73,9 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 15:00 read redis-py client guide. matches what we already do: `decode_responses=True`, SET/GET strings (or hashes). needs a running Redis server. optional `redis[hiredis]` for faster parsing later.
 - 15:01 read redis-py production usage notes: retries (default 3), `health_check_interval`, timeouts (`socket_connect_timeout` / `socket_timeout`), handle `ConnectionError`/`TimeoutError`. good candidates to tighten on `from_url` later if we have time.
 - 15:03 started Redis with Docker: `docker run -d --name mood-redis -p 6379:6379 redis:7-alpine`. `redis-cli ping` inside container -> PONG. hit `/health` via test client -> `{"status":"ok","redis":true}`.
+- 15:04 added route tests under `tests/functional/` (`/health`, `/weather`, `/moods`). conftest now injects a mock Redis so tests do not need a live server. `pytest` -> 21 passed.
 
-Hands-on so far: about 68 min since the venv. next: route tests, or Compose/Dockerfile.
+Hands-on so far: about 70 min since the venv. next: Dockerfile + Compose (app + redis).
 
 ## Open decisions
 
