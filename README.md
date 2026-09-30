@@ -72,8 +72,9 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 14:55 read redis-cli docs (`ping`, `-u redis://host:port/db`). wired Redis in `create_app` via `redis.Redis.from_url(REDIS_URL)` onto `app.extensions["redis"]` (decode_responses, protocol=2). tests can still inject `REDIS_CLIENT`. `/health` now reports `redis` true/false. note: `redis-cli` is not installed on this machine yet; server will come with Compose later.
 - 15:00 read redis-py client guide. matches what we already do: `decode_responses=True`, SET/GET strings (or hashes). needs a running Redis server. optional `redis[hiredis]` for faster parsing later.
 - 15:01 read redis-py production usage notes: retries (default 3), `health_check_interval`, timeouts (`socket_connect_timeout` / `socket_timeout`), handle `ConnectionError`/`TimeoutError`. good candidates to tighten on `from_url` later if we have time.
+- 15:03 started Redis with Docker: `docker run -d --name mood-redis -p 6379:6379 redis:7-alpine`. `redis-cli ping` inside container -> PONG. hit `/health` via test client -> `{"status":"ok","redis":true}`.
 
-Hands-on so far: about 66 min since the venv. next: start a Redis somehow and smoke `/health`, or add route tests.
+Hands-on so far: about 68 min since the venv. next: route tests, or Compose/Dockerfile.
 
 ## Open decisions
 
