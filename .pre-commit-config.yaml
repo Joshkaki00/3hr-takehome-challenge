@@ -29,7 +29,10 @@ repos:
     rev: 1.9.4
     hooks:
       - id: bandit
-        args: ["-r", ".", "-x", "./.venv,./.git", "-ll"]
+        # pass_filenames false: we scan the tree ourselves.
+        # otherwise pre-commit appends file paths after `-r .` and bandit dies.
+        pass_filenames: false
+        args: ["-r", "app", "tests", "-x", "./.venv,./.git", "-ll"]
         additional_dependencies: []
 
   # Official PyPA hook. Prefer -r requirements.txt once freeze is filled.

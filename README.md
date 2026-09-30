@@ -34,7 +34,12 @@ Filled in after the app exists.
 
 ### Tests
 
-Mock the weather response. Tests should run with no API key.
+```bash
+source .venv/bin/activate
+pytest
+```
+
+Unit tests live under `tests/unit/`. Weather HTTP and Redis are mocked, so no API key and no Redis needed to run them.
 
 ## Time log
 
@@ -60,14 +65,15 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 14:33 made `.env` + `.env.example` skeletons (`OPENWEATHER_API_KEY`, `REDIS_URL`, host/port)
 - 14:37 put the real key in local `.env` (gitignored, not committed)
 - 14:38 redid this time log. the big table looked fake. switching to timestamp bullets like a normal work journal.
+- 14:44 looked up how people structure Flask tests (app factory, `tests/conftest.py`, `tests/unit/`). made `app/` + `tests/unit/`, wrote weather + mood unit tests with mocks. `pytest` -> 14 passed.
 
-Hands-on so far: about 46 min since the venv. still need I/O notes, then tests first (weather, save mood, list moods).
+Hands-on so far: about 50 min since the venv. next: wire redis on app start, maybe a couple route tests, then Dockerfile/Compose.
 
 ## Open decisions
 
-- Storage: Redis (decided). Mood entries live in Redis. Tests will mock Redis or use a fake.
-- Docker: will need a Redis service (Compose) plus the Flask app image; earlier one-container-only plan is outdated.
-- Endpoints and mood entry fields
-- One mood per day: overwrite or reject
+- Storage: Redis (decided). Mood entries live in Redis. Tests mock Redis.
+- One mood per day: overwrite by default (can reject with overwrite=False).
+- Docker: will need a Redis service (Compose) plus the Flask app image.
+- Endpoints so far: `GET /health`, `GET /weather?city=`, `POST /moods`, `GET /moods`.
 - DM format: zip or repo link (ask instructor)
 - Does instructor have Docker (ask instructor)
