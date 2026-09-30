@@ -114,8 +114,9 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 15:22 prod step 5 (web search): Redis `--requirepass` + AOF (`appendonly yes`, volume `redis-data`). healthcheck uses `REDISCLI_AUTH` (no `-a` on CLI). api `REDIS_URL` includes password. `.env.example` documents `REDIS_PASSWORD`.
 - 15:24 prod step 6 (web search): Redis anti-pattern KEYS -> `scan_iter(match="moods:*")` in `list_moods`. unit test updated.
 - 15:28 prod step 7 (web search): split probes. `/health` liveness (always 200). `/ready` checks Redis, 503 if down. Docker HEALTHCHECK now hits `/ready`.
+- 15:31 prod step 8 (web search): Compose `deploy.resources` limits/reservations on api (1 CPU / 256M) and redis (0.5 CPU / 128M). Compose V2 applies these without Swarm.
 
-Hands-on so far: about 120 min since the venv. next prod step: Compose resource limits (`deploy.resources` / `mem_limit`).
+Hands-on so far: about 125 min since the venv. next prod step: structured logging / ProxyFix, or stop and submit.
 
 ## Open decisions
 
