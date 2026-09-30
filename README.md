@@ -16,10 +16,10 @@ Anonymous users look up weather by city and log a mood for that day. No login.
 
 ```bash
 cp .env.example .env
-# edit .env and set OPENWEATHER_API_KEY
+# edit .env: set OPENWEATHER_API_KEY and REDIS_PASSWORD
 ```
 
-Do not commit `.env`. Do not bake the key into the image.
+Do not commit `.env`. Do not bake secrets into the image.
 
 ### 2. Local (venv + Redis)
 
@@ -46,7 +46,7 @@ docker compose down
 ```
 
 - API: host port 5000 (`0.0.0.0` in the container)
-- Redis: internal only (`redis://redis:6379/0`)
+- Redis: internal only; password via `REDIS_PASSWORD`; AOF on volume `redis-data`
 - Container runs **gunicorn** (`wsgi:app`), not `flask run`
 
 ### 4. Quick API checks
@@ -109,8 +109,9 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 15:16 prod step 2 (web search): run container as non-root. Dockerfile adds system user/group `app` (uid/gid 1000), `chown` app files, `USER app` before gunicorn.
 - 15:18 prod step 3 (web search): Docker HEALTHCHECK on `/health` via stdlib urllib (slim has no curl). interval 30s, start-period 10s.
 - 15:19 prod step 4 (web search): Compose waits for Redis ready. redis `healthcheck: redis-cli ping`, api `depends_on.redis.condition: service_healthy`.
+- 15:22 prod step 5 (web search): Redis `--requirepass` + AOF (`appendonly yes`, volume `redis-data`). healthcheck uses `REDISCLI_AUTH` (no `-a` on CLI). api `REDIS_URL` includes password. `.env.example` documents `REDIS_PASSWORD`.
 
-Hands-on so far: about 105 min since the venv. next prod step: Redis auth + persistence (AOF/volume), or replace moods `KEYS` with SCAN.
+Hands-on so far: about 110 min since the venv. next prod step: replace moods `KEYS` with `SCAN`.
 
 ## Open decisions
 
