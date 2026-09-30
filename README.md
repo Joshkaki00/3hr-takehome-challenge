@@ -61,7 +61,7 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 14:37 put the real key in local `.env` (gitignored, not committed)
 - 14:38 redid this time log. the big table looked fake. switching to timestamp bullets like a normal work journal.
 
-Hands-on so far: roughly 25 min since the venv. still need I/O notes, then tests first (weather, save mood, list moods).
+Hands-on so far: about 46 min since the venv. still need I/O notes, then tests first (weather, save mood, list moods).
 
 ## Open decisions
 
