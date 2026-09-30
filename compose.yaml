@@ -2,6 +2,8 @@
 # API key / Redis password stay out of the image: pass via host env or .env.
 # Startup order: https://docs.docker.com/compose/how-tos/startup-order/
 # Redis auth + AOF: https://redis.io/tutorials/operate/orchestration/docker/
+# Resource limits (Compose V2+ applies deploy.resources on compose up):
+# https://docs.docker.com/reference/compose-file/deploy/#resources
 
 services:
   redis:
@@ -25,6 +27,14 @@ services:
       timeout: 3s
       retries: 5
       start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 128M
+        reservations:
+          cpus: "0.10"
+          memory: 32M
     restart: unless-stopped
 
   api:
@@ -42,6 +52,14 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 64M
     restart: unless-stopped
 
 volumes:
