@@ -22,6 +22,11 @@ USER app
 # Key and Redis URL come from env / Compose, never baked in.
 EXPOSE 5000
 
+# App-level probe (not just "process running"). No curl in slim: use stdlib.
+# https://docs.docker.com/reference/dockerfile/#healthcheck
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=2)"
+
 # Prod WSGI (not flask run). Exec-form CMD => gunicorn is PID 1 (SIGTERM).
 # See: https://flask.palletsprojects.com/en/stable/deploying/gunicorn/
 CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "wsgi:app"]
