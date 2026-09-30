@@ -110,8 +110,9 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 15:18 prod step 3 (web search): Docker HEALTHCHECK on `/health` via stdlib urllib (slim has no curl). interval 30s, start-period 10s.
 - 15:19 prod step 4 (web search): Compose waits for Redis ready. redis `healthcheck: redis-cli ping`, api `depends_on.redis.condition: service_healthy`.
 - 15:22 prod step 5 (web search): Redis `--requirepass` + AOF (`appendonly yes`, volume `redis-data`). healthcheck uses `REDISCLI_AUTH` (no `-a` on CLI). api `REDIS_URL` includes password. `.env.example` documents `REDIS_PASSWORD`.
+- 15:24 prod step 6 (web search): Redis anti-pattern KEYS -> `scan_iter(match="moods:*")` in `list_moods`. unit test updated.
 
-Hands-on so far: about 110 min since the venv. next prod step: replace moods `KEYS` with `SCAN`.
+Hands-on so far: about 115 min since the venv. next prod step: return 503 from `/health` when Redis is down (readiness), or resource limits in Compose.
 
 ## Open decisions
 

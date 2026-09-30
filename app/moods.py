@@ -72,7 +72,9 @@ def get_mood(redis_client, day=None):
 
 
 def list_moods(redis_client):
-    keys = sorted(redis_client.keys("moods:*"))
+    # KEYS blocks Redis on large keyspaces; SCAN pages incrementally.
+    # https://redis.io/docs/latest/commands/scan/
+    keys = sorted(redis_client.scan_iter(match="moods:*", count=100))
     out = []
     for key in keys:
         raw = redis_client.get(key)

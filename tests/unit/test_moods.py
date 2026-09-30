@@ -85,7 +85,9 @@ def test_get_mood_missing():
 
 def test_list_moods_sorted():
     redis_client = MagicMock()
-    redis_client.keys.return_value = ["moods:2026-09-29", "moods:2026-09-30"]
+    redis_client.scan_iter.return_value = iter(
+        ["moods:2026-09-29", "moods:2026-09-30"]
+    )
 
     def _get(key):
         if key == "moods:2026-09-29":
@@ -95,3 +97,4 @@ def test_list_moods_sorted():
     redis_client.get.side_effect = _get
     rows = list_moods(redis_client)
     assert [r["date"] for r in rows] == ["2026-09-29", "2026-09-30"]
+    redis_client.scan_iter.assert_called_once_with(match="moods:*", count=100)
