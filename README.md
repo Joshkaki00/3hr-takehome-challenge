@@ -106,8 +106,9 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 15:10 set redis-py timeouts on `from_url`: `socket_connect_timeout=2`, `socket_timeout=2`, `health_check_interval=30`.
 - 15:11 Compose smoke: moods OK; `/weather` returned invalid key. root cause: One Call 4.0 needs a paid plan. switched to Current Weather Data 2.5 (free). updated unit mocks. `pytest` 21 passed. rebuild smoke: Seattle weather + POST/GET moods all green.
 - 15:14 prod step 1 (web search): Flask says use a real WSGI server, not `flask run`. installed `gunicorn==23.0.0`, pinned in requirements, Dockerfile CMD now `gunicorn -w 2 -b 0.0.0.0:5000 wsgi:app` (exec form so gunicorn is PID 1). local venv still uses `flask run`.
+- 15:16 prod step 2 (web search): run container as non-root. Dockerfile adds system user/group `app` (uid/gid 1000), `chown` app files, `USER app` before gunicorn.
 
-Hands-on so far: about 90 min since the venv. next prod step: non-root user in the image (Flask/Gunicorn guidance).
+Hands-on so far: about 95 min since the venv. next prod step: Docker HEALTHCHECK on `/health`.
 
 ## Open decisions
 
