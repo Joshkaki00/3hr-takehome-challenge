@@ -22,6 +22,7 @@ Filled in after the app exists.
 - Activate: `source .venv/bin/activate`
 - pip: 26.2.1
 - Install: `pip install -r requirements.txt`
+- Run: `flask --app wsgi run --host=0.0.0.0 --port=5000`
 
 ### Docker
 
@@ -67,8 +68,9 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 14:38 redid this time log. the big table looked fake. switching to timestamp bullets like a normal work journal.
 - 14:44 looked up how people structure Flask tests (app factory, `tests/conftest.py`, `tests/unit/`). made `app/` + `tests/unit/`, wrote weather + mood unit tests with mocks. `pytest` -> 14 passed.
 - 14:50 re-read OpenWeather One Call 4.0 + Flask quickstart (minimal app, `flask --app ... run`, `--host=0.0.0.0`). next step is making the runnable app entry, one piece at a time.
+- 14:51 added `wsgi.py` (load dotenv, `app = create_app()`). used `wsgi.py` instead of `app.py` so it does not clash with the `app/` package. run with `flask --app wsgi run` (or just `flask run` from this dir).
 
-Hands-on so far: about 55 min since the venv. next: runnable entry (`app.py` / dotenv load), then redis wire-up.
+Hands-on so far: about 56 min since the venv. next: wire Redis onto the app at startup.
 
 ## Open decisions
 
