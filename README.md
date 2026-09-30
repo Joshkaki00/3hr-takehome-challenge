@@ -12,45 +12,60 @@ Anonymous users look up weather by city and log a mood for that day. No login.
 
 ## How to run
 
-Filled in after the app exists.
-
-### Virtualenv
-
-- Python: 3.13.3
-- Path: `.venv/` (local only; ignored)
-- Create: `python3 -m venv .venv`
-- Activate: `source .venv/bin/activate`
-- pip: 26.2.1
-- Install: `pip install -r requirements.txt`
-- Run: `flask --app wsgi run --host=0.0.0.0 --port=5000`
-
-### Docker
+### 1. Environment
 
 ```bash
-# needs OPENWEATHER_API_KEY in the environment or in local .env
+cp .env.example .env
+# edit .env and set OPENWEATHER_API_KEY
+```
+
+Do not commit `.env`. Do not bake the key into the image.
+
+### 2. Local (venv + Redis)
+
+Needs a Redis on `REDIS_URL` (default `redis://localhost:6379/0`). Easiest:
+
+```bash
+docker run -d --name mood-redis -p 6379:6379 redis:7.2.5-alpine
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+flask --app wsgi run --host=0.0.0.0 --port=5000
+```
+
+- Python used here: 3.13.3 (image uses 3.12.7-slim)
+- pip: 26.2.1
+
+### 3. Docker Compose (preferred for graders)
+
+```bash
+# OPENWEATHER_API_KEY from the shell or from local .env
 docker compose up --build --detach
 curl http://127.0.0.1:5000/health
 docker compose down
 ```
 
-- API listens on host port **5000** (`0.0.0.0` inside the container)
-- Redis is internal only (`redis://redis:6379/0`); not published to the host
-- Key is never baked into the image (Compose `environment` / optional `env_file`)
-### Environment
+- API: host port 5000 (`0.0.0.0` in the container)
+- Redis: internal only (`redis://redis:6379/0`)
 
-- Copy `.env.example` to `.env`
-- Set `OPENWEATHER_API_KEY`
-- Do not commit `.env`
-- Do not bake the key into the image
+### 4. Quick API checks
 
-### Tests
+```bash
+curl "http://127.0.0.1:5000/weather?city=Seattle"
+curl -X POST http://127.0.0.1:5000/moods \
+  -H "Content-Type: application/json" \
+  -d '{"mood":"ok","note":"cloudy"}'
+curl http://127.0.0.1:5000/moods
+```
+
+### 5. Tests
 
 ```bash
 source .venv/bin/activate
 pytest
 ```
 
-Unit tests live under `tests/unit/`. Weather HTTP and Redis are mocked, so no API key and no Redis needed to run them.
+Weather HTTP and Redis are mocked. No API key and no Redis needed for `pytest`.
 
 ## Time log
 
@@ -86,13 +101,14 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 15:04 added route tests under `tests/functional/` (`/health`, `/weather`, `/moods`). conftest now injects a mock Redis so tests do not need a live server. `pytest` -> 21 passed.
 - 15:06 re-read Docker run-an-app tutorial, `docker version`, CLI ref, Compose secrets docs. kept API key as env (not Compose secrets file) for simpler instructor setup.
 - 15:07 added `Dockerfile` (`python:3.12.7-slim`), `.dockerignore`, `compose.yaml` (api + `redis:7.2.5-alpine`). `docker compose up --build -d` then `curl /health` -> `{"status":"ok","redis":true}`.
+- 15:08 rewrote How to run in the README (env, local venv, Compose, curl checks, pytest). stub "Filled in after the app exists" is gone.
 
-Hands-on so far: about 75 min since the venv. next: maybe tighten redis-py timeouts, or a final README polish / clean check from scratch.
+Hands-on so far: about 80 min since the venv. next: tighten redis-py timeouts on `from_url`, then a clean Compose smoke of weather + moods.
 
 ## Open decisions
 
 - Storage: Redis (decided). Mood entries live in Redis. Tests mock Redis.
 - One mood per day: overwrite by default (can reject with overwrite=False).
-- Docker: Compose with `api` + `redis` (done). Instructor needs Docker Desktop or equivalent.
-- Endpoints so far: `GET /health`, `GET /weather?city=`, `POST /moods`, `GET /moods`.
+- Docker: Compose with `api` + `redis` (done).
+- Endpoints: `GET /health`, `GET /weather?city=`, `POST /moods`, `GET /moods`.
 - DM format: zip or repo link (ask instructor)
