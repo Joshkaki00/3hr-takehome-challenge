@@ -69,8 +69,9 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 14:44 looked up how people structure Flask tests (app factory, `tests/conftest.py`, `tests/unit/`). made `app/` + `tests/unit/`, wrote weather + mood unit tests with mocks. `pytest` -> 14 passed.
 - 14:50 re-read OpenWeather One Call 4.0 + Flask quickstart (minimal app, `flask --app ... run`, `--host=0.0.0.0`). next step is making the runnable app entry, one piece at a time.
 - 14:51 added `wsgi.py` (load dotenv, `app = create_app()`). used `wsgi.py` instead of `app.py` so it does not clash with the `app/` package. run with `flask --app wsgi run` (or just `flask run` from this dir).
+- 14:55 read redis-cli docs (`ping`, `-u redis://host:port/db`). wired Redis in `create_app` via `redis.Redis.from_url(REDIS_URL)` onto `app.extensions["redis"]` (decode_responses, protocol=2). tests can still inject `REDIS_CLIENT`. `/health` now reports `redis` true/false. note: `redis-cli` is not installed on this machine yet; server will come with Compose later.
 
-Hands-on so far: about 56 min since the venv. next: wire Redis onto the app at startup.
+Hands-on so far: about 60 min since the venv. next: start a Redis somehow and smoke `/health`, or add route tests.
 
 ## Open decisions
 

@@ -7,7 +7,14 @@ bp = Blueprint("api", __name__)
 
 @bp.get("/health")
 def health():
-    return jsonify({"status": "ok"})
+    redis_client = current_app.extensions.get("redis")
+    redis_ok = False
+    if redis_client is not None:
+        try:
+            redis_ok = redis_client.ping() is True
+        except Exception:
+            redis_ok = False
+    return jsonify({"status": "ok", "redis": redis_ok})
 
 
 @bp.get("/weather")
