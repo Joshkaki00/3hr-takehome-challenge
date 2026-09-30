@@ -122,7 +122,7 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 15:39 prod step 11 (web search): structured JSON logs. pinned `python-json-logger==4.2.0`, `gunicorn.conf.py` `logconfig_dict`, Dockerfile `gunicorn -c gunicorn.conf.py`.
 - 15:48 prod step 12 (web search): Flask-Limiter 4.1.1 with Redis storage (shared across gunicorn workers). default 60/min; weather 30/min; POST moods 20/min; `/health`+`/ready` exempt. tests cover 429. stopping here.
 
-Hands-on so far: about 150 min since the venv. prod hardening pass complete for this take-home.
+About 150 min since the venv.
 
 ## Open decisions
 
