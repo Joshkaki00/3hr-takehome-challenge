@@ -1,9 +1,16 @@
 # App + Redis. No top-level version key (Compose Spec).
 # API key stays out of the image: pass via host env or .env file.
+# Startup order: https://docs.docker.com/compose/how-tos/startup-order/
 
 services:
   redis:
     image: redis:7.2.5-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
     restart: unless-stopped
 
   api:
@@ -19,5 +26,6 @@ services:
       - path: .env
         required: false
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: unless-stopped
