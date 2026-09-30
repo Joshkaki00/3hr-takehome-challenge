@@ -66,8 +66,9 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 14:37 put the real key in local `.env` (gitignored, not committed)
 - 14:38 redid this time log. the big table looked fake. switching to timestamp bullets like a normal work journal.
 - 14:44 looked up how people structure Flask tests (app factory, `tests/conftest.py`, `tests/unit/`). made `app/` + `tests/unit/`, wrote weather + mood unit tests with mocks. `pytest` -> 14 passed.
+- 14:50 re-read OpenWeather One Call 4.0 + Flask quickstart (minimal app, `flask --app ... run`, `--host=0.0.0.0`). next step is making the runnable app entry, one piece at a time.
 
-Hands-on so far: about 50 min since the venv. next: wire redis on app start, maybe a couple route tests, then Dockerfile/Compose.
+Hands-on so far: about 55 min since the venv. next: runnable entry (`app.py` / dotenv load), then redis wire-up.
 
 ## Open decisions
 
