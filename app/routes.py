@@ -7,6 +7,13 @@ bp = Blueprint("api", __name__)
 
 @bp.get("/health")
 def health():
+    # Liveness only: process is up. Do not probe Redis here (restart storms).
+    return jsonify({"status": "ok"})
+
+
+@bp.get("/ready")
+def ready():
+    # Readiness: can we serve traffic that needs Redis?
     redis_client = current_app.extensions.get("redis")
     redis_ok = False
     if redis_client is not None:
@@ -14,7 +21,11 @@ def health():
             redis_ok = redis_client.ping() is True
         except Exception:
             redis_ok = False
-    return jsonify({"status": "ok", "redis": redis_ok})
+    payload = {
+        "status": "ready" if redis_ok else "not_ready",
+        "redis": redis_ok,
+    }
+    return jsonify(payload), (200 if redis_ok else 503)
 
 
 @bp.get("/weather")

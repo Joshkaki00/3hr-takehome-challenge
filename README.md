@@ -39,15 +39,17 @@ flask --app wsgi run --host=0.0.0.0 --port=5000
 ### 3. Docker Compose (preferred for graders)
 
 ```bash
-# OPENWEATHER_API_KEY from the shell or from local .env
+# needs OPENWEATHER_API_KEY + REDIS_PASSWORD in the environment or local .env
 docker compose up --build --detach
 curl http://127.0.0.1:5000/health
+curl http://127.0.0.1:5000/ready
 docker compose down
 ```
 
 - API: host port 5000 (`0.0.0.0` in the container)
 - Redis: internal only; password via `REDIS_PASSWORD`; AOF on volume `redis-data`
 - Container runs **gunicorn** (`wsgi:app`), not `flask run`
+- Probes: `/health` = liveness; `/ready` = Redis up (Docker HEALTHCHECK uses `/ready`)
 
 ### 4. Quick API checks
 
@@ -111,13 +113,14 @@ PDT. Clock for the build started when I made the venv (around 14:13). Planning b
 - 15:19 prod step 4 (web search): Compose waits for Redis ready. redis `healthcheck: redis-cli ping`, api `depends_on.redis.condition: service_healthy`.
 - 15:22 prod step 5 (web search): Redis `--requirepass` + AOF (`appendonly yes`, volume `redis-data`). healthcheck uses `REDISCLI_AUTH` (no `-a` on CLI). api `REDIS_URL` includes password. `.env.example` documents `REDIS_PASSWORD`.
 - 15:24 prod step 6 (web search): Redis anti-pattern KEYS -> `scan_iter(match="moods:*")` in `list_moods`. unit test updated.
+- 15:28 prod step 7 (web search): split probes. `/health` liveness (always 200). `/ready` checks Redis, 503 if down. Docker HEALTHCHECK now hits `/ready`.
 
-Hands-on so far: about 115 min since the venv. next prod step: return 503 from `/health` when Redis is down (readiness), or resource limits in Compose.
+Hands-on so far: about 120 min since the venv. next prod step: Compose resource limits (`deploy.resources` / `mem_limit`).
 
 ## Open decisions
 
 - Storage: Redis (decided). Mood entries live in Redis. Tests mock Redis.
 - One mood per day: overwrite by default (can reject with overwrite=False).
 - Docker: Compose with `api` + `redis` (done).
-- Endpoints: `GET /health`, `GET /weather?city=`, `POST /moods`, `GET /moods`.
+- Endpoints: `GET /health`, `GET /ready`, `GET /weather?city=`, `POST /moods`, `GET /moods`.
 - DM format: zip or repo link (ask instructor)

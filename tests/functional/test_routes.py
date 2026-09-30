@@ -7,7 +7,23 @@ def test_health_ok(client):
     resp = client.get("/health")
     assert resp.status_code == 200
     assert resp.get_json()["status"] == "ok"
-    assert resp.get_json()["redis"] is True
+
+
+def test_ready_ok(client):
+    resp = client.get("/ready")
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert body["status"] == "ready"
+    assert body["redis"] is True
+
+
+def test_ready_redis_down(client, redis_client):
+    redis_client.ping.side_effect = ConnectionError("down")
+    resp = client.get("/ready")
+    assert resp.status_code == 503
+    body = resp.get_json()
+    assert body["status"] == "not_ready"
+    assert body["redis"] is False
 
 
 def test_weather_missing_city(client):
