@@ -130,4 +130,3 @@ Hands-on so far: about 150 min since the venv. prod hardening pass complete for 
 - One mood per day: overwrite by default (can reject with overwrite=False).
 - Docker: Compose with `api` + `redis` (done).
 - Endpoints: `GET /health`, `GET /ready`, `GET /weather?city=`, `POST /moods`, `GET /moods`.
-- DM format: zip or repo link (ask instructor)
