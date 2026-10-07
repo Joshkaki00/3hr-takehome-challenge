@@ -1,0 +1,126 @@
+#!/bin/bash
+set -e
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Defaults
+VERBOSE=0
+SKIP_TESTS=0
+SKIP_DOCKER=0
+
+usage() {
+    cat << EOF
+Restart Weather + Mood API dev environment (clean restart)
+
+Usage: ./restart [OPTIONS]
+
+Options:
+  -h, --help        Show this help message
+  -v, --verbose     Verbose output
+  -t, --no-tests    Skip running tests
+  -d, --no-docker   Skip Docker (use system Redis on localhost:6379)
+
+Examples:
+  ./restart                  # Full clean restart
+  ./restart -v               # Verbose output
+  ./restart -t               # Restart but don't run tests
+EOF
+}
+
+log() {
+    echo -e "${BLUE}→${NC} $*"
+}
+
+error() {
+    echo -e "${RED}✗${NC} $*" >&2
+}
+
+success() {
+    echo -e "${GREEN}✓${NC} $*"
+}
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -v|--verbose)
+            VERBOSE=1
+            shift
+            ;;
+        -t|--no-tests)
+            SKIP_TESTS=1
+            shift
+            ;;
+        -d|--no-docker)
+            SKIP_DOCKER=1
+            shift
+            ;;
+        *)
+            error "Unknown option: $1"
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+log "Restarting dev environment (clean)..."
+
+# Kill everything
+log "Killing all processes..."
+pkill -9 -f flask || true
+pkill -9 -f pytest || true
+pkill -9 -f gunicorn || true
+killall -9 python3 2>/dev/null || true
+docker stop mood-redis 2>/dev/null || true
+docker rm -f mood-redis 2>/dev/null || true
+rm -rf .pytest_cache __pycache__ app/__pycache__ tests/__pycache__ tests/*/__pycache__ 2>/dev/null || true
+[[ $VERBOSE -eq 1 ]] && success "All processes killed"
+
+sleep 1
+
+# Docker Redis
+if [[ $SKIP_DOCKER -eq 0 ]]; then
+    log "Starting Docker Redis on port 6380..."
+    if docker run -d --name mood-redis -p 6380:6379 redis:7.2.5-alpine 2>/dev/null; then
+        success "Docker Redis started (no auth for dev)"
+    else
+        error "Failed to start Docker Redis"
+        exit 1
+    fi
+else
+    log "Skipping Docker, using system Redis on localhost:6379"
+fi
+
+sleep 2
+
+# Flask
+log "Starting Flask dev server on port 5000..."
+source .venv/bin/activate
+flask --app wsgi run --host=0.0.0.0 --port=5000 &
+FLASK_PID=$!
+[[ $VERBOSE -eq 1 ]] && success "Flask started (PID: $FLASK_PID)"
+
+sleep 3
+
+# Tests
+if [[ $SKIP_TESTS -eq 0 ]]; then
+    log "Running tests..."
+    if pytest -v --tb=short; then
+        success "All tests passed"
+    else
+        error "Tests failed"
+        kill $FLASK_PID 2>/dev/null || true
+        exit 1
+    fi
+else
+    success "Tests skipped"
+fi
+
+success "Dev environment restarted on http://localhost:5000"

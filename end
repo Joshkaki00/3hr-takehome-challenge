@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Defaults
+VERBOSE=0
+
+usage() {
+    cat << EOF
+Stop Weather + Mood API dev environment
+
+Usage: ./end [OPTIONS]
+
+Options:
+  -h, --help     Show this help message
+  -v, --verbose  Verbose output
+
+Examples:
+  ./end          # Stop all services
+  ./end -v       # Verbose output
+EOF
+}
+
+log() {
+    echo -e "${BLUE}→${NC} $*"
+}
+
+error() {
+    echo -e "${RED}✗${NC} $*" >&2
+}
+
+success() {
+    echo -e "${GREEN}✓${NC} $*"
+}
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -v|--verbose)
+            VERBOSE=1
+            shift
+            ;;
+        *)
+            error "Unknown option: $1"
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+log "Stopping all services..."
+
+pkill -9 -f flask || true
+pkill -9 -f pytest || true
+pkill -9 -f gunicorn || true
+killall -9 python3 2>/dev/null || true
+[[ $VERBOSE -eq 1 ]] && success "Processes stopped"
+
+docker stop mood-redis 2>/dev/null || true
+docker rm -f mood-redis 2>/dev/null || true
+[[ $VERBOSE -eq 1 ]] && success "Docker cleaned"
+
+rm -rf .pytest_cache __pycache__ app/__pycache__ tests/__pycache__ tests/*/__pycache__ 2>/dev/null || true
+[[ $VERBOSE -eq 1 ]] && success "Cache cleaned"
+
+success "All services stopped"
